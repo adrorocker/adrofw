@@ -28,4 +28,4 @@ php adrofw --create=module --name=[module-name]
 ```
 Where [module-name] is the name of the module.
 
-Rmemeber this is a selfcontained repocitory so you need to be insie it to run the cli helper.
+Rmemeber this is a selfcontained repository so you need to be inside it to run the cli helper.
