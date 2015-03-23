@@ -10,3 +10,22 @@ Generic MVC Project
 ## About
 
 **Adro Famework** is a minimalistic MVC framework design for small projects
+
+## CLI Helper
+
+You can use the cli helper to create a new app.
+
+Run the helper.
+
+To create app run:
+```
+php adrofw --create=app
+```
+
+To create module run:
+```
+php adrofw --create=module --name=[module-name]
+```
+Where [module-name] is the name of the module.
+
+Rmemeber this is a selfcontained repository so you need to be inside it to run the cli helper.

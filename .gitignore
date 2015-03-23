@@ -1,0 +1,4 @@
+# General stuff
+/application/
+/public/
+.DS_Store
