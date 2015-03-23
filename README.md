@@ -9,4 +9,4 @@ Generic MVC Project
 
 ## About
 
-**Adro Famework** is a minimalistic MVC framework desing for small projects
+**Adro Famework** is a minimalistic MVC framework design for small projects
