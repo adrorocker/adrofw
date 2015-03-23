@@ -1,10 +1,10 @@
 # Adro Framework
-=================
+
 Generic MVC Project
 
 
-[Author: Adro Rocker](https://github.com/adrorocker)
-[MIT Licence](https://github.com/adrorocker/adrofw/blob/master/LICENSE.md)
+[Author: Adro Rocker](https://github.com/adrorocker).
+[MIT Licence](https://github.com/adrorocker/adrofw/blob/master/LICENSE.md).
 
 ## About
 
