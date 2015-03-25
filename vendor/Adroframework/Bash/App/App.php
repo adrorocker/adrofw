@@ -1,15 +1,20 @@
 <?php
 
-require_once $rootPath.'/vendor/Adroframework/Bash/Module/Module.php';
-
 class App
 {
-    const ROOT_APP_DIRECTORY        = 'application';
-    const APP_CONFIG_DIRECTORY      = 'configs';
-    const APP_MODULES_DIRECTORY     = 'modules';
-    const APP_CONFIG_FILE_NAME      = 'application.config';
-    const APP_DB_CONFIG_DIRECTORY   = 'db';
-    const APP_DB_CONFIG_FILE_NAME   = 'db.adapter.config';
+    const ROOT_APP_DIRECTORY            = 'application';
+    const APP_CLASS                     = 'Application';
+    const ROOT_CONTROLLERS_DIRECTORY    = 'controllers';
+    const ROOT_MODELS_DIRECTORY         = 'models';
+    const ROOT_VIEWS_DIRECTORY          = 'views';
+    const ROOT_FORMS_DIRECTORY          = 'forms';
+    const ROOT_HELPERS_DIRECTORY        = 'helpers';
+    const APP_CONFIG_DIRECTORY          = 'configs';
+    const APP_PUBLIC_DIRECTORY          = 'public';
+    const APP_CONFIG_FILE_NAME          = 'application.config';
+    const APP_DB_CONFIG_DIRECTORY       = 'db';
+    const APP_DB_CONFIG_FILE_NAME       = 'db.adapter.config';
+    const APP_INDEX_FILE_NAME           = 'index';
 
     protected $moduleCreation;
     protected $rootPath;
@@ -20,15 +25,15 @@ class App
             die("Invalid path");
         }
         $this->rootPath = $rootPath;
-        $this->moduleCreation = new Module($rootPath);
     }
 
     public function createApp()
     {
         $this->createMainDirectories();        
+        $this->createApplicationClass();        
         $this->createApplicationConfigFile();
         $this->createDbConfigFile();
-        $this->createModule();
+        $this->createIndexFile();
     }
 
     protected function createMainDirectories()
@@ -37,14 +42,29 @@ class App
             if (!file_exists ( $this->rootPath.'/'.self::ROOT_APP_DIRECTORY) ) {
                 mkdir($this->rootPath.'/'.self::ROOT_APP_DIRECTORY);
             }
+            if (!file_exists ( $this->rootPath.'/'.self::ROOT_APP_DIRECTORY.'/'.self::ROOT_CONTROLLERS_DIRECTORY) ) {
+                mkdir($this->rootPath.'/'.self::ROOT_APP_DIRECTORY.'/'.self::ROOT_CONTROLLERS_DIRECTORY);
+            }
+            if (!file_exists ( $this->rootPath.'/'.self::ROOT_APP_DIRECTORY.'/'.self::ROOT_MODELS_DIRECTORY) ) {
+                mkdir($this->rootPath.'/'.self::ROOT_APP_DIRECTORY.'/'.self::ROOT_MODELS_DIRECTORY);
+            }
+            if (!file_exists ( $this->rootPath.'/'.self::ROOT_APP_DIRECTORY.'/'.self::ROOT_VIEWS_DIRECTORY) ) {
+                mkdir($this->rootPath.'/'.self::ROOT_APP_DIRECTORY.'/'.self::ROOT_VIEWS_DIRECTORY);
+            }
+            if (!file_exists ( $this->rootPath.'/'.self::ROOT_APP_DIRECTORY.'/'.self::ROOT_FORMS_DIRECTORY) ) {
+                mkdir($this->rootPath.'/'.self::ROOT_APP_DIRECTORY.'/'.self::ROOT_FORMS_DIRECTORY);
+            }
+            if (!file_exists ( $this->rootPath.'/'.self::ROOT_APP_DIRECTORY.'/'.self::ROOT_HELPERS_DIRECTORY) ) {
+                mkdir($this->rootPath.'/'.self::ROOT_APP_DIRECTORY.'/'.self::ROOT_HELPERS_DIRECTORY);
+            }
             if (!file_exists ( $this->rootPath.'/'.self::ROOT_APP_DIRECTORY.'/'.self::APP_CONFIG_DIRECTORY) ) {
                 mkdir($this->rootPath.'/'.self::ROOT_APP_DIRECTORY.'/'.self::APP_CONFIG_DIRECTORY);
             }
             if (!file_exists ( $this->rootPath.'/'.self::ROOT_APP_DIRECTORY.'/'.self::APP_CONFIG_DIRECTORY.'/'.self::APP_DB_CONFIG_DIRECTORY) ) {
                 mkdir($this->rootPath.'/'.self::ROOT_APP_DIRECTORY.'/'.self::APP_CONFIG_DIRECTORY.'/'.self::APP_DB_CONFIG_DIRECTORY);
             }
-            if (!file_exists ( $this->rootPath.'/'.self::ROOT_APP_DIRECTORY.'/'.self::APP_MODULES_DIRECTORY) ) {
-                mkdir($this->rootPath.'/'.self::ROOT_APP_DIRECTORY.'/'.self::APP_MODULES_DIRECTORY);
+            if (!file_exists ( $this->rootPath.'/'.self::APP_PUBLIC_DIRECTORY) ) {
+                mkdir($this->rootPath.'/'.self::APP_PUBLIC_DIRECTORY);
             }
         } catch (Exception $e) {
             echo 'Caught exception: ',  $e->getMessage(), "\n";
@@ -64,12 +84,10 @@ class App
                         ." * If you add a module manually, add it's configuration here.\n"
                         ." */\n\n"
                         ."return array(\n"
-                        ."    'modules' => array(\n"
-                        ."       'main' => array(\n"
-                        ."            'defaults' => array(\n"
-                        ."                'layout'        => 'layout',\n"
-                        ."                'controller'    => 'index',\n"
-                        ."                'action'        => 'index'\n"
+                        ."    'application' => array(\n"
+                        ."       'configs' => array(\n"
+                        ."            'db' => array(\n"
+                        ."                'configfile' => __DIR__ . '/db/db.adapter.config.php',\n"
                         ."            ),\n"
                         ."            'view_manager' => array(\n"
                         ."                'doctype'                  => 'HTML5',\n"
@@ -79,6 +97,8 @@ class App
                         ."                    __DIR__ . '/../views',\n"
                         ."                ),\n"
                         ."            ),\n"
+                        ."        ),\n"
+                        ."       'modules' => array(\n"
                         ."        ),\n"
                         ."    ),\n"
                         .");";
@@ -95,7 +115,7 @@ class App
             if (file_exists ( $this->rootPath.'/'.self::ROOT_APP_DIRECTORY.'/'.self::APP_CONFIG_DIRECTORY.'/'.self::APP_DB_CONFIG_DIRECTORY.'/'.self::APP_DB_CONFIG_FILE_NAME.'.php' )) {
                 die("Config file exist, this is not a clean creation of new application\n");
             }
-            $content = "<?php \n"
+            $content =  "<?php \n"
                         ."/**\n"
                         ." * Db Adater configuration file\n"
                         ." * This was autogenerated by the adrofw cli helper\n"
@@ -109,8 +129,66 @@ class App
         }
     }
 
-    protected function createModule()
+    protected function createApplicationClass()
     {
-        $this->moduleCreation->createModule('main');
+        try {
+            if (file_exists ( $this->rootPath.'/'.self::ROOT_APP_DIRECTORY.'/'.self::APP_CLASS.'.php' )) {
+                die("Config file exist, this is not a clean creation of new application\n");
+            }
+            $content =  "<?php \n"
+                        ."/**\n"
+                        ." * Application class extending the Bootstrap\n"
+                        ." * This was autogenerated by the adrofw cli helper.\n"
+                        ." */\n\n"
+                        ."use Adroframework\Bootstrap\Bootstrap;\n\n"
+                        ."class Application extends Bootstrap\n"
+                        ."{\n\n"
+                        ."\n"
+                        ."}";
+            $file = $this->rootPath.'/'.self::ROOT_APP_DIRECTORY.'/'.self::APP_CLASS.'.php';
+            file_put_contents($file, $content);
+        } catch (Exception $e) {
+            echo 'Caught exception: ',  $e->getMessage(), "\n";
+        }
+    }
+
+    protected function createIndexFile()
+    {
+        try {
+            if (file_exists ( $this->rootPath.'/'.self::APP_PUBLIC_DIRECTORY.'/'.self::APP_INDEX_FILE_NAME.'.php' )) {
+                die("Index file exist, this is not a clean creation of new application\n");
+            }
+            $content =  "<?php\n\n"
+                        ."// Define application environment\n"
+                        ."defined('APPLICATION_ENV')\n"
+                        ."        || define('APPLICATION_ENV', (getenv('APPLICATION_ENV')\n"
+                        ."        ? getenv('APPLICATION_ENV') : 'production'));\n\n"
+                        ."/**\n"
+                        ." * Display all errors when APPLICATION_ENV is development.\n"
+                        ." */".PHP_EOL
+                        ."if (\$_SERVER['APPLICATION_ENV'] == 'development') {\n"
+                        ."    error_reporting(E_ALL);\n"
+                        ."    ini_set('display_errors', 1);\n"
+                        ."} else {\n"
+                        ."    ini_set('display_errors', 0);\n"
+                        ."}\n\n"
+                        ."/**\n"
+                        ." * This makes our life easier when dealing with paths. Everything is relative\n"
+                        ." * to the application root now.\n"
+                        ." */".PHP_EOL
+                        ."chdir(dirname(__DIR__));\n\n"
+                        ."/**\n"
+                        ." * Set root path\n"
+                        ." **/".PHP_EOL
+                        ."define('ROOT_PATH',dirname(__DIR__).'/');\n\n"
+                        ."define('APP_PATH', ROOT_PATH . 'application/');\n"
+                        ."require 'init_autoloader.php';\n"
+                        ."\$app = new Application();\n"
+                        ."\$app->run();";
+            $file = $this->rootPath.'/'.self::APP_PUBLIC_DIRECTORY.'/'.self::APP_INDEX_FILE_NAME.'.php';
+            file_put_contents($file, $content);
+        } catch (Exception $e) {
+            echo 'Caught exception: ',  $e->getMessage(), "\n";
+        }
     }
 }
