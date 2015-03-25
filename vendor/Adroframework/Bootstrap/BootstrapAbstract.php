@@ -88,7 +88,7 @@ abstract class BootstrapAbstract
 
     public function getApplicationConfigFile()
     {
-        $this->acf = require_once APP_PATH.'/'.self::APP_CONFG_DIRECTORY.'/application.config.php';
+        $this->acf = require APP_PATH.'/'.self::APP_CONFG_DIRECTORY.'/application.config.php';
         return $this->acf;
     }
 
