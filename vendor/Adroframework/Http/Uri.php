@@ -2,8 +2,23 @@
 
 namespace Adroframework\Http;
 
+use Adroframework\Module\ModuleHelper;
+
 class Uri
 {
+
+    protected $moduleHelper;
+
+    public function __construct()
+    {
+        $this->moduleHelper = new ModuleHelper();
+    }
+
+    public function getModuleHelper()
+    {
+        return $this->moduleHelper;
+    }
+
     public function getUri()
     {
         $url = urldecode($_SERVER['REQUEST_URI']);
@@ -42,13 +57,12 @@ class Uri
 
     public function getModuleControllerAction()
     {
+        $modules = $this->getModuleHelper()->getModuleNames();
         $url = urldecode($_SERVER['REQUEST_URI']);
         $url = trim($url, '/');
         $url = explode('/', $url);
         if (isset($url[0]) && '' != $url[0]) {
             $module = $url[0];
-        } elseif (isset($url[0]) && '' == $url[0]) {
-            $module = 'main';
         } else {
             $module = null;
         }
