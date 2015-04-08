@@ -6,6 +6,8 @@ use Adroframework\Module\ModuleHelper;
 
 class Uri
 {
+    const MODEL_MODE    = 'model';
+    const MAIN_MODE     = 'main';
 
     protected $moduleHelper;
 
@@ -58,29 +60,60 @@ class Uri
     public function getModuleControllerAction()
     {
         $modules = $this->getModuleHelper()->getModuleNames();
-        $url = urldecode($_SERVER['REQUEST_URI']);
-        $url = trim($url, '/');
-        $url = explode('/', $url);
-        if (isset($url[0]) && '' != $url[0]) {
-            $module = $url[0];
+        $uri = $this->getUri();
+        $uri = explode('/', $uri);
+
+        if(!empty($modules) && in_array($uri[0], $modules)) {
+            $moduleControllerAction = $this->parse(self::MODEL_MODE, $uri);
         } else {
+            $moduleControllerAction = $this->parse(self::MAIN_MODE, $uri);
+        }
+        return $moduleControllerAction;
+    }
+
+    protected function parse($mode, $uri)
+    {
+        if (self::MAIN_MODE == $mode) {
             $module = null;
+            if (isset($uri[0]) && '' != $uri[0]) {
+                $controller = ucfirst($uri[0]);
+            } else {
+                $controller = 'Index';
+            }
+            if (isset($uri[1])) {
+                $action = $uri[1].'Action';
+            } else {
+                $action = 'indexAction';
+            }
+        } elseif (self::MODEL_MODE == $mode) {
+            if (isset($uri[0]) && '' != $uri[0]) {
+                $module = $uri[0];
+            } else {
+                $module = null;
+            }
+            if (null == $module) {
+                $controller = null;
+                $action = null;
+            } else {
+                if (isset($uri[1])) {
+                    $controller = ucfirst($uri[1]);
+                } else {
+                    $controller = 'Index';
+                }
+                if (isset($uri[2])) {
+                    $action = $uri[2].'Action';
+                } else {
+                    $action = 'indexAction';
+                }
+            }
         }
-        if (isset($url[1])) {
-            $controller = ucfirst($url[1]);
-        } else {
-            $controller = 'Index';
-        }
-        if (isset($url[2])) {
-            $action = $url[2];
-        } else {
-            $action = null;
-        }
+        
         $moduleControllerAction = array(
             'module' => $module,
-            'controller' => ucfirst($controller),
-            'action' => $action.'Action'
+            'controller' => $controller,
+            'action' => $action
         );
+
         return $moduleControllerAction;
     }
 }

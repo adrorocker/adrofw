@@ -2,13 +2,27 @@
 
 namespace Adroframework\Bootstrap;
 
+use Adroframework\Exception\AdroException;
+use Adroframework\controller\Error;
+
 abstract class BootstrapAbstract
 {
     const APP_CONFG_DIRECTORY = 'configs';
+
+    public $uri;
+
+    protected $classLoader;
+
     /**
      * Application config file
      */
     protected $acf;
+
+    public function __construct()
+    {
+        $this->uri = new Uri();
+        $this->classLoader = new LocalizeClass();
+    }
 
     public function getAclInstance()
     {
@@ -25,6 +39,8 @@ abstract class BootstrapAbstract
     public function route()
     {
         $modules = $this->getModules();
+        $data = $this->uri->getModuleControllerAction();
+        $this->dispatch($modules, $data);
         if(in_array($this->uri->getModule(), $modules)) {
             if (class_exists($this->uri->getModuleController())) {
                 die("in2");
@@ -63,7 +79,42 @@ abstract class BootstrapAbstract
                 }
             }
             die();
+        } else {
+
         }
+    }
+
+    protected function dispatch(array $modules, $data)
+    {
+        if (in_array($this->uri->getModule(), $modules)) {
+            die('module');
+        } else {
+            $c = $this->uri->getModuleController();
+            $controller = $this->classLoader->getClass($c, $data);
+            if (is_object($controller) && $data['action']) {
+                $e = $this->actionExist($controller,$data['action']);
+                if ($e) {
+                    $controller->{$data['action']}();
+                } else {
+                    try {
+                        $e = new AdroException("Action : ".$data['action'].", dont exist");
+                        $e->setLine(3)->setType('404');
+                        throw $e;
+                    } catch (AdroException $e) {
+                        $err = new Error($e);
+                        $err->indexAction();
+                    }
+                }
+            }
+        }
+    }
+
+    public function dispatchMain()
+    {
+    }
+
+    public function dispatchModule()
+    {
     }
 
     public function getModules()
@@ -75,11 +126,7 @@ abstract class BootstrapAbstract
 
     public function actionExist($object, $method)
     {
-        $class = new $object();
-        if ('Action' === $method) {
-            $method = 'indexAction';
-        }
-        if (method_exists($class, $method)) {
+        if (method_exists($object, $method)) {
             return true;
         } else {
             return false;
@@ -88,7 +135,9 @@ abstract class BootstrapAbstract
 
     public function getApplicationConfigFile()
     {
-        $this->acf = require APP_PATH.'/'.self::APP_CONFG_DIRECTORY.'/application.config.php';
+        if (!is_array($this->acf)) {
+            $this->acf = require APP_PATH.'/'.self::APP_CONFG_DIRECTORY.'/application.config.php';
+        }
         return $this->acf;
     }
 

@@ -10,7 +10,7 @@
 
 namespace Adroframework\Db\Adapter;
 
-use \Adroframework\Db\Adapter\AdapterInterface; 
+use Adroframework\Db\Adapter\AdapterInterface; 
 
 class Adapter implements AdapterInterface
 {
