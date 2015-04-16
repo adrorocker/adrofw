@@ -1,5 +1,7 @@
 <?php
 
+namespace Adroframework\Hash;
+
 class Hash
 {
     public static function create($algo, $data, $saltKey)
