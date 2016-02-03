@@ -15,5 +15,5 @@ Interface AdapterInterface
     /**
      * Get configurtation to conect to DB
      */
-    public function getConfig();
+    public function getConfigs();
 }

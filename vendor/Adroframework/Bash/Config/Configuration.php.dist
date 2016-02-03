@@ -1,0 +1,15 @@
+<?php
+
+/**
+ * Configuration file
+ * 
+ * path: Whare the repo resides
+ * sudo: Whether sudo is needed or not
+ * sudopass: The actual password for sudo
+ */
+
+return array(
+        'path' => '/var/www/*/', 
+        'sudo' => false,
+        'sudopass' => '***',
+    );
